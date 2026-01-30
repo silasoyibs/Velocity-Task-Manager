@@ -26,7 +26,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
   return (
     <>
       <header className=" ring-1 ring-black/5 text-zinc-900  border-[rgba(0,0,0,0.1)] bg-white px-3">
-        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center justify-between sm:p-5">
           {/* Left: Toggle + title + nav links */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex items-center gap-3">
@@ -69,7 +69,6 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         </div>
       </header>
 
-      {/* ✅ Modal */}
       <CreateTaskModal open={open} onClose={() => setOpen(false)} />
     </>
   );

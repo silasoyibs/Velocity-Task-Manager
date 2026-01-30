@@ -106,7 +106,7 @@ export default function TaskCard({ task, onDelete, onEdit }) {
             type="button"
             className="rounded-lg p-2"
             aria-label="Edit task"
-            onClick={() => onEdit?.task}
+            onClick={() => onEdit?.(task)}
           >
             <FaEdit className="h-5 w-5 text-gray-500" />
           </button>

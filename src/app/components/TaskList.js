@@ -29,7 +29,7 @@ export default function TaskList() {
       await updateTask(editingTask.id, payload);
       setEditingTask(null); // ✅ close modal
     } catch (err) {
-      console.err(err);
+      console.error(err);
     }
   }
 
