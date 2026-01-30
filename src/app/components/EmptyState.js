@@ -1,7 +1,6 @@
-function EmptyState(message) {
-  return function Message({ Text }) {
-    return <div className="dark:text-dark-mode text-lg">{Text}</div>;
-  };
+"use client";
+function EmptyState({ message }) {
+  return <div className="text-lg text-black">{message}</div>;
 }
 
 export default EmptyState;

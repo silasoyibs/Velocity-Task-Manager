@@ -11,12 +11,26 @@ export default function TaskList() {
   const [editingTask, setEditingTask] = useState(null);
 
   async function handleDelete(id) {
-    await deleteTask(id);
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this task?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteTask(id);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function handleUpdate(payload) {
-    await updateTask(editingTask.id, payload);
-    setEditingTask(null); // ✅ close modal
+    try {
+      await updateTask(editingTask.id, payload);
+      setEditingTask(null); // ✅ close modal
+    } catch (err) {
+      console.err(err);
+    }
   }
 
   return (

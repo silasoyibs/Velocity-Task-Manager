@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const IconDot = ({ active }) => (
@@ -57,7 +58,9 @@ export default function Sidebar({ collapsed = false }) {
           ].join(" ")}
         >
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl ring-1 ring-black/10">
-            <span className="text-xs font-semibold">CL</span>
+            <span className="text-xs font-semibold">
+              <Image src="/logo.jpeg" alt="Logo" width={300} height={300} />
+            </span>
           </div>
 
           {!collapsed && (
