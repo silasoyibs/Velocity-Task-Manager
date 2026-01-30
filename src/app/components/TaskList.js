@@ -27,9 +27,9 @@ export default function TaskList() {
             <motion.div
               key={task.id}
               layout
-              initial={{ opacity: 0, x: -30 }} // ⬅️ off screen
+              initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 60 }} // ➡️ slide out
+              exit={{ opacity: 0, x: 60 }}
               transition={{ type: "spring", stiffness: 1000, damping: 90 }}
             >
               <TaskCard

@@ -1,18 +1,16 @@
 "use client";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import { useState } from "react";
+import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // export const metadata = {
@@ -28,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${montserrat.variable} ${montserrat.variable} antialiased`}
       >
         <div className="h-screen overflow-hidden bg-zinc-50">
           {/* Sidebar fixed (not scrollable) */}
@@ -56,11 +54,15 @@ export default function RootLayout({ children }) {
             </header>
 
             {/* Routed page scrolls */}
-            <main className="flex-1 bg-green-500 shadow-soft ring-1 ring-black/5 w-full h-screen overflow-y-auto">
+            <main className="flex-1  shadow-soft ring-1 ring-black/5 w-full h-screen overflow-y-auto ">
+              <div className="text-2xl font-semibold text-zinc-900 pl-8 mt-4 ">
+                All Task
+              </div>
               <div className="p-4 sm:p-6">{children}</div>
             </main>
           </div>
         </div>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

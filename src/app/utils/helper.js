@@ -44,20 +44,28 @@ export function renderTagIcon(variant) {
 
 export function getTagStyles(variant) {
   switch (variant) {
+    case "urgent":
+      return {
+        pill: "bg-red-50 text-red-700 ring-red-200",
+        iconWrap: "bg-red-100 text-red-700",
+      };
+
     case "personal":
       return {
         pill: "bg-purple-50 text-purple-700 ring-purple-200",
         iconWrap: "bg-purple-100 text-purple-700",
       };
+
     case "ideas":
       return {
-        pill: "bg-amber-50 text-amber-800 ring-amber-200",
-        iconWrap: "bg-amber-100 text-amber-800",
+        pill: "bg-amber-50 text-amber-700 ring-amber-200",
+        iconWrap: "bg-ember-100 text-ember-700",
       };
+
     case "work":
     default:
       return {
-        pill: "bg-blue-50 text-blue-700 ring-blue-200",
+        pill: "bg-blue-50 text-blue-700 ring-blue-200 ",
         iconWrap: "bg-blue-100 text-blue-700",
       };
   }

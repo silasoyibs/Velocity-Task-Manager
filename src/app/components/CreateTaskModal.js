@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createTask, updateTask } from "../services/apiTasks"; // ✅ add updateTask
+import { createTask, updateTask } from "../services/apiTasks";
+import { toast } from "sonner";
 
 const categories = [
   { key: "work", label: "Work", icon: BriefcaseIcon },
@@ -9,7 +10,6 @@ const categories = [
   { key: "ideas", label: "Ideas", icon: BulbIcon },
 ];
 
-// ✅ now supports BOTH create + edit
 export default function CreateTaskModal({
   open,
   onClose,
@@ -18,24 +18,27 @@ export default function CreateTaskModal({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("work");
 
-  // ✅ Reset / Prefill when opened
+  // ✅ multi-select tags
+  const [selectedTags, setSelectedTags] = useState(["work"]);
+
   useEffect(() => {
     if (!open) return;
 
     if (mode === "edit" && task) {
       setTitle(task.tittle || "");
       setDescription(task.description || "");
-      setCategory(task.tags?.[0] || "work");
+
+      const t =
+        Array.isArray(task.tags) && task.tags.length ? task.tags : ["work"];
+      setSelectedTags(t);
     } else {
       setTitle("");
       setDescription("");
-      setCategory("work");
+      setSelectedTags(["work"]);
     }
   }, [open, mode, task]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e) => {
@@ -47,29 +50,44 @@ export default function CreateTaskModal({
 
   if (!open) return null;
 
+  function toggleTag(tagKey) {
+    setSelectedTags((prev) => {
+      const has = prev.includes(tagKey);
+
+      // if removing would make it empty, keep at least one
+      if (has && prev.length === 1) return prev;
+
+      return has ? prev.filter((t) => t !== tagKey) : [...prev, tagKey];
+    });
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
     const payload = {
       tittle: title.trim(),
       description: description.trim(),
-      tags: [category],
+      tags: selectedTags,
     };
 
     if (!payload.tittle) return;
 
     try {
       if (mode === "edit" && task?.id) {
-        await updateTask(task.id, payload); // ✅ UPDATE
+        await updateTask(task.id, payload);
+        toast.success("Task update successful");
       } else {
-        await createTask(payload); // ✅ CREATE
+        await createTask(payload);
+        toast.success("Task created successful");
       }
-
       onClose?.();
     } catch (err) {
       console.error(
         `${mode === "edit" ? "Update" : "Create"} task failed:`,
         err,
+      );
+      toast.error(
+        `${mode === "edit" ? "Update" : "Create"} task failed:` || err.message,
       );
     }
   }
@@ -84,12 +102,12 @@ export default function CreateTaskModal({
         className="absolute inset-0 bg-black/40"
       />
 
-      {/* Modal */}
-      <div className="relative mx-auto flex min-h-screen max-w-3xl items-center justify-center p-4">
+      {/* Modal wrapper (reduced height + scroll) */}
+      <div className="relative mx-auto flex min-h-screen max-w-2xl items-center justify-center p-4">
         <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
-            <h2 className="text-2xl font-semibold text-zinc-900">
+          <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">
+            <h2 className="text-xl font-semibold text-zinc-900">
               {mode === "edit" ? "Edit Task" : "Create New Task"}
             </h2>
 
@@ -103,8 +121,8 @@ export default function CreateTaskModal({
             </button>
           </div>
 
-          {/* Body */}
-          <form className="px-6 py-6" onSubmit={handleSubmit}>
+          {/* Body (tighter spacing) */}
+          <form onSubmit={handleSubmit} className="px-5 py-4">
             {/* Title */}
             <label className="block text-sm font-medium text-zinc-900">
               Task Title
@@ -113,39 +131,41 @@ export default function CreateTaskModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title..."
-              className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+              className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
             />
 
             {/* Description */}
-            <label className="mt-5 block text-sm font-medium text-zinc-900">
+            <label className="mt-4 block text-sm font-medium text-zinc-900">
               Description <span className="text-zinc-400">(Optional)</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add more details..."
-              rows={4}
-              className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+              rows={3}
+              className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
             />
 
-            {/* Category */}
-            <div className="mt-6">
-              <div className="text-sm font-medium text-zinc-900">Category</div>
+            {/* Categories (multi-select) */}
+            <div className="mt-5">
+              <div className="text-sm font-medium text-zinc-900">
+                Categories
+              </div>
 
               <div className="mt-3 flex flex-wrap gap-3">
                 {categories.map((c) => {
                   const Icon = c.icon;
-                  const selected = category === c.key;
+                  const selected = selectedTags.includes(c.key);
 
                   return (
                     <button
                       key={c.key}
                       type="button"
-                      onClick={() => setCategory(c.key)}
+                      onClick={() => toggleTag(c.key)}
                       className={[
-                        "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition",
+                        "inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition",
                         selected
-                          ? "border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-200"
+                          ? "border-amber-400 bg-amber-50 text-black ring-2 ring-amber-200"
                           : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50",
                       ].join(" ")}
                       aria-pressed={selected}
@@ -158,10 +178,14 @@ export default function CreateTaskModal({
                   );
                 })}
               </div>
+
+              <div className="mt-2 text-xs text-zinc-500">
+                Tip: you can pick multiple. (At least one is required.)
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-8 flex items-center justify-end gap-3 border-t border-black/10 pt-5">
+            <div className="mt-6 flex items-center justify-end gap-3 border-t border-black/10 pt-4">
               <button
                 type="button"
                 onClick={onClose}
@@ -172,7 +196,7 @@ export default function CreateTaskModal({
 
               <button
                 type="submit"
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+                className="rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black "
                 disabled={!title.trim()}
               >
                 {mode === "edit" ? "Update Task" : "Create Task"}
@@ -185,7 +209,7 @@ export default function CreateTaskModal({
   );
 }
 
-/* ---------- Icons (no extra libraries) ---------- */
+/* ---------- Icons ---------- */
 function XIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">

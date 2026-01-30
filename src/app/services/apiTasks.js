@@ -32,7 +32,7 @@ export async function createTask({ tittle, description = "", tags = [] }) {
       tittle,
       description,
       completed: false,
-      tags, // ✅ PB field
+      tags,
     });
 
     return record;

@@ -12,17 +12,17 @@ export default function TaskCard({ task, onDelete, onEdit }) {
 
   // ✅ map DB tag labels -> your style variants (colors/icons)
   const variantMap = {
-    Work: "work",
-    Urgent: "urgent",
-    Personal: "personal",
-    Ideas: "ideas",
+    work: "work",
+    urgent: "urgent",
+    personal: "personal",
+    ideas: "ideas",
   };
 
   return (
-    <div className="w-full rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+    <div className="w-full rounded-2xl border border-zinc-200 bg-white px-5 py-3 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         {/* Left */}
-        <div className="flex min-w-0 items-start gap-4">
+        <div className="flex min-w-0 items-start gap-2">
           <button
             type="button"
             onClick={() => setChecked((v) => !v)}
@@ -48,7 +48,7 @@ export default function TaskCard({ task, onDelete, onEdit }) {
             {/* Title */}
             <h3
               className={[
-                "truncate text-lg font-semibold",
+                "truncate text-xl font-semibold",
                 checked ? "text-zinc-400 line-through" : "text-zinc-900",
               ].join(" ")}
             >
@@ -58,7 +58,7 @@ export default function TaskCard({ task, onDelete, onEdit }) {
             {/* Description */}
             <p
               className={[
-                "mt-1 truncate text-base",
+                "mt-1 truncate text-base ",
                 checked ? "text-zinc-400 line-through" : "text-zinc-600",
               ].join(" ")}
             >
@@ -68,7 +68,8 @@ export default function TaskCard({ task, onDelete, onEdit }) {
             {/* ✅ Tags from DB + Time */}
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {tags.map((label, idx) => {
-                const variant = variantMap[label] || "work"; // fallback
+                const key = String(label).toLowerCase(); // normalize
+                const variant = variantMap[key] || "work";
                 const tagStyles = getTagStyles(variant);
 
                 return (
@@ -105,9 +106,9 @@ export default function TaskCard({ task, onDelete, onEdit }) {
             type="button"
             className="rounded-lg p-2"
             aria-label="Edit task"
-            onClick={() => onEdit?.(task)}
+            onClick={() => onEdit?.task}
           >
-            <FaEdit className="h-5 w-5 text-black-600" />
+            <FaEdit className="h-5 w-5 text-gray-500" />
           </button>
 
           <button
