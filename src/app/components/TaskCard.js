@@ -1,32 +1,30 @@
 "use client";
 import { useState } from "react";
-import { getTagStyles, renderTagIcon } from "../utils/helper";
+import { MdDelete } from "react-icons/md";
+import { getTagStyles, renderTagIcon, timeAgoFromISO } from "../utils/helper";
 
-export default function TaskCard({
-  title = "Task title",
-  description = "Task description",
-  defaultChecked = false,
-  tag = { label: "Work", variant: "personal" },
-  timeAgo = "4h ago",
-  onEdit,
-  onDelete,
-}) {
-  const [checked, setChecked] = useState(defaultChecked);
-  const tagStyles = getTagStyles(tag?.variant);
+export default function TaskCard({ task }) {
+  const [checked, setChecked] = useState(!!task.completed);
+
+  // ✅ tags from DB
+  const tags = Array.isArray(task.tags) ? task.tags : [];
+
+  // ✅ map DB tag labels -> your style variants (colors/icons)
+  const variantMap = {
+    Work: "work",
+    Urgent: "urgent",
+    Personal: "personal",
+    Ideas: "ideas",
+  };
 
   return (
-    <div
-      className={[
-        "w-full rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm",
-        ,
-      ].join(" ")}
-    >
+    <div className="w-full rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         {/* Left */}
         <div className="flex min-w-0 items-start gap-4">
           <button
             type="button"
-            onClick={() => setChecked((v) => !v)} // ✅ toggle here
+            onClick={() => setChecked((v) => !v)}
             className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 bg-white"
             aria-label="Toggle task"
           >
@@ -38,7 +36,7 @@ export default function TaskCard({
               >
                 <path
                   fillRule="evenodd"
-                  d="M16.704 5.29a1 1 0 010 1.415l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 011.415-1.415l2.492 2.492 6.492-6.492a1 1 0 011.416 0z"
+                  d="M16.704 5.29a1 1 0 010 1.415l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 011.415-1.415l2.492 2.492 6.492-6.492a1 0 011.416 0z"
                   clipRule="evenodd"
                 />
               </svg>
@@ -46,44 +44,56 @@ export default function TaskCard({
           </button>
 
           <div className="min-w-0">
-            {/* ✅ strike-through when checked */}
+            {/* Title */}
             <h3
               className={[
                 "truncate text-lg font-semibold",
                 checked ? "text-zinc-400 line-through" : "text-zinc-900",
               ].join(" ")}
             >
-              {title}
+              {task.tittle}
             </h3>
 
+            {/* Description */}
             <p
               className={[
                 "mt-1 truncate text-base",
                 checked ? "text-zinc-400 line-through" : "text-zinc-600",
               ].join(" ")}
             >
-              {description}
+              {task.description}
             </p>
 
-            <div className="mt-4 flex items-center gap-3">
-              <span
-                className={[
-                  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ring-1",
-                  tagStyles.pill,
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "inline-flex h-5 w-5 items-center justify-center rounded-full",
-                    tagStyles.iconWrap,
-                  ].join(" ")}
-                >
-                  {renderTagIcon(tag?.variant)}
-                </span>
-                {tag?.label}
-              </span>
+            {/* ✅ Tags from DB + Time */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {tags.map((label, idx) => {
+                const variant = variantMap[label] || "work"; // fallback
+                const tagStyles = getTagStyles(variant);
 
-              <span className="text-sm text-zinc-400">{timeAgo}</span>
+                return (
+                  <span
+                    key={`${label}-${idx}`}
+                    className={[
+                      "inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ring-1",
+                      tagStyles.pill,
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "inline-flex h-5 w-5 items-center justify-center rounded-full",
+                        tagStyles.iconWrap,
+                      ].join(" ")}
+                    >
+                      {renderTagIcon(variant)}
+                    </span>
+                    {label}
+                  </span>
+                );
+              })}
+
+              <span className="ml-1 text-sm text-zinc-400">
+                {timeAgoFromISO(task.created)}
+              </span>
             </div>
           </div>
         </div>
@@ -92,7 +102,6 @@ export default function TaskCard({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={onEdit}
             className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700"
             aria-label="Edit task"
           >
@@ -104,13 +113,10 @@ export default function TaskCard({
 
           <button
             type="button"
-            onClick={onDelete}
             className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700"
             aria-label="Delete task"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-              <path d="M9 3.75A2.25 2.25 0 0111.25 1.5h1.5A2.25 2.25 0 0115 3.75V5.25h4.5a.75.75 0 010 1.5H18.75v14.25A3 3 0 0115.75 24h-7.5A3 3 0 015.25 21V6.75H4.5a.75.75 0 010-1.5H9V3.75zM10.5 5.25h3V3.75a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75v1.5z" />
-            </svg>
+            <MdDelete className="h-5 w-5 text-red-500" />
           </button>
         </div>
       </div>
