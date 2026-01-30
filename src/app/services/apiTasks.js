@@ -41,3 +41,9 @@ export async function createTask({ tittle, description = "", tags = [] }) {
     throw new Error("Could not create task");
   }
 }
+
+// UPDATE
+export async function updateTask(id, updates = {}) {
+  const record = await pb.collection("Tasks").update(id, updates);
+  return record;
+}

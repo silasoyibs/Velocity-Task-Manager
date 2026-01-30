@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createTask } from "../services/apiTasks";
+import { createTask, updateTask } from "../services/apiTasks"; // ✅ add updateTask
 
 const categories = [
   { key: "work", label: "Work", icon: BriefcaseIcon },
@@ -9,18 +9,31 @@ const categories = [
   { key: "ideas", label: "Ideas", icon: BulbIcon },
 ];
 
-export default function CreateTaskModal({ open, onClose, onCreateTask }) {
+// ✅ now supports BOTH create + edit
+export default function CreateTaskModal({
+  open,
+  onClose,
+  mode = "create",
+  task = null,
+}) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("work");
 
-  // Reset form when opened
+  // ✅ Reset / Prefill when opened
   useEffect(() => {
     if (!open) return;
-    setTitle("");
-    setDescription("");
-    setCategory("work");
-  }, [open]);
+
+    if (mode === "edit" && task) {
+      setTitle(task.tittle || "");
+      setDescription(task.description || "");
+      setCategory(task.tags?.[0] || "work");
+    } else {
+      setTitle("");
+      setDescription("");
+      setCategory("work");
+    }
+  }, [open, mode, task]);
 
   // Close on Escape
   useEffect(() => {
@@ -34,22 +47,30 @@ export default function CreateTaskModal({ open, onClose, onCreateTask }) {
 
   if (!open) return null;
 
-  async function handleCreateTask(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const payload = {
-      tittle: title.trim(), // ✅ PB expects "tittle"
+      tittle: title.trim(),
       description: description.trim(),
-      tags: [category], // ✅ PB expects "tags" (array)
+      tags: [category],
     };
 
     if (!payload.tittle) return;
 
     try {
-      await createTask(payload);
+      if (mode === "edit" && task?.id) {
+        await updateTask(task.id, payload); // ✅ UPDATE
+      } else {
+        await createTask(payload); // ✅ CREATE
+      }
+
       onClose?.();
     } catch (err) {
-      console.error("Create task failed:", err);
+      console.error(
+        `${mode === "edit" ? "Update" : "Create"} task failed:`,
+        err,
+      );
     }
   }
 
@@ -69,7 +90,7 @@ export default function CreateTaskModal({ open, onClose, onCreateTask }) {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
             <h2 className="text-2xl font-semibold text-zinc-900">
-              Create New Task
+              {mode === "edit" ? "Edit Task" : "Create New Task"}
             </h2>
 
             <button
@@ -83,7 +104,7 @@ export default function CreateTaskModal({ open, onClose, onCreateTask }) {
           </div>
 
           {/* Body */}
-          <form className="px-6 py-6" onSubmit={handleCreateTask}>
+          <form className="px-6 py-6" onSubmit={handleSubmit}>
             {/* Title */}
             <label className="block text-sm font-medium text-zinc-900">
               Task Title
@@ -154,7 +175,7 @@ export default function CreateTaskModal({ open, onClose, onCreateTask }) {
                 className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
                 disabled={!title.trim()}
               >
-                Create Task
+                {mode === "edit" ? "Update Task" : "Create Task"}
               </button>
             </div>
           </form>

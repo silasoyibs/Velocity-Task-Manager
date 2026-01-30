@@ -4,7 +4,7 @@ import { MdDelete } from "react-icons/md";
 import { getTagStyles, renderTagIcon, timeAgoFromISO } from "../utils/helper";
 import { FaEdit } from "react-icons/fa";
 
-export default function TaskCard({ task, onDelete }) {
+export default function TaskCard({ task, onDelete, onEdit }) {
   const [checked, setChecked] = useState(!!task.completed);
 
   // ✅ tags from DB
@@ -105,6 +105,7 @@ export default function TaskCard({ task, onDelete }) {
             type="button"
             className="rounded-lg p-2"
             aria-label="Edit task"
+            onClick={() => onEdit?.(task)}
           >
             <FaEdit className="h-5 w-5 text-black-600" />
           </button>

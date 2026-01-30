@@ -60,11 +60,6 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
           {/* Right: Search + actions */}
           <div className="flex items-center gap-2">
-            <input
-              placeholder="Search tasks…"
-              className="w-full sm:w-64 rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-            />
-
             {/* ✅ Open Modal */}
             <button
               type="button"
@@ -72,13 +67,6 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
               className="rounded-xl bg-zinc-900 px-3 py-2 text-sm font-semibold text-amber-400 hover:bg-zinc-800"
             >
               + New Task
-            </button>
-
-            <button
-              type="button"
-              className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-            >
-              Filter
             </button>
           </div>
         </div>
