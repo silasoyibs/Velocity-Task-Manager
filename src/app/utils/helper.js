@@ -1,3 +1,4 @@
+// Convert an ISO date string into a short "time ago" label
 export function timeAgoFromISO(isoString) {
   const date = new Date(isoString);
   const diffMs = Date.now() - date.getTime();
@@ -13,6 +14,7 @@ export function timeAgoFromISO(isoString) {
   return `${days}d ago`;
 }
 
+// Normalize a raw tag string into a known variant
 export function tagVariant(tag) {
   const t = (tag || "").toLowerCase();
   if (t === "personal") return "personal";
@@ -20,6 +22,7 @@ export function tagVariant(tag) {
   return "work";
 }
 
+// Render a small icon based on the tag variant
 export function renderTagIcon(variant) {
   if (variant === "personal") {
     return (
@@ -28,6 +31,7 @@ export function renderTagIcon(variant) {
       </svg>
     );
   }
+
   if (variant === "ideas") {
     return (
       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
@@ -35,6 +39,8 @@ export function renderTagIcon(variant) {
       </svg>
     );
   }
+
+  // Default icon (work / fallback)
   return (
     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
       <path d="M9 3.75A2.25 2.25 0 0111.25 1.5h1.5A2.25 2.25 0 0115 3.75V6h4.5A2.25 2.25 0 0121.75 8.25v10.5A2.25 2.25 0 0119.5 21h-15A2.25 2.25 0 012.25 18.75V8.25A2.25 2.25 0 014.5 6H9V3.75zM10.5 6h3V3.75a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75V6z" />
@@ -42,6 +48,7 @@ export function renderTagIcon(variant) {
   );
 }
 
+// Return Tailwind styles for each tag variant
 export function getTagStyles(variant) {
   switch (variant) {
     case "urgent":
@@ -59,13 +66,13 @@ export function getTagStyles(variant) {
     case "ideas":
       return {
         pill: "bg-amber-50 text-amber-700 ring-amber-200",
-        iconWrap: "bg-ember-100 text-ember-700",
+        iconWrap: "bg-amber-100 text-amber-700", // fixed typo (ember → amber)
       };
 
     case "work":
     default:
       return {
-        pill: "bg-blue-50 text-blue-700 ring-blue-200 ",
+        pill: "bg-blue-50 text-blue-700 ring-blue-200",
         iconWrap: "bg-blue-100 text-blue-700",
       };
   }

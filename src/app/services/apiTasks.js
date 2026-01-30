@@ -1,23 +1,27 @@
+// PocketBase client instance
 import pb from "../lib/pocketbase";
 
-// GET
+// Fetch a paginated list of tasks sorted by newest first
 export async function getTasks() {
   try {
     const result = await pb.collection("Tasks").getList(1, 30, {
       sort: "-created",
     });
 
-    return result.items; // return only the tasks
+    // Return only the task records
+    return result.items;
   } catch (err) {
     console.error("Failed to fetch tasks:", err);
     throw new Error("Could not get tasks");
   }
 }
 
-// DELETE
+// Delete a task by its id
 export async function deleteTask(id) {
   try {
     await pb.collection("Tasks").delete(id);
+
+    // Return the deleted task id for state updates
     return id;
   } catch (err) {
     console.error("Failed to fetch tasks:", err);
@@ -25,7 +29,7 @@ export async function deleteTask(id) {
   }
 }
 
-// CREATE
+// Create a new task record
 export async function createTask({ tittle, description = "", tags = [] }) {
   try {
     const record = await pb.collection("Tasks").create({
@@ -35,6 +39,7 @@ export async function createTask({ tittle, description = "", tags = [] }) {
       tags,
     });
 
+    // Return the created task
     return record;
   } catch (err) {
     console.error("Failed to create task:", err);
@@ -42,8 +47,10 @@ export async function createTask({ tittle, description = "", tags = [] }) {
   }
 }
 
-// UPDATE
+// Update an existing task with partial changes
 export async function updateTask(id, updates = {}) {
   const record = await pb.collection("Tasks").update(id, updates);
+
+  // Return the updated task
   return record;
 }
