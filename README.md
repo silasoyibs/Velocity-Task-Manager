@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+CasaLavoro – Realtime Task Manager
 
-## Getting Started
+CasaLavoro is a real-time task management dashboard built with Next.js (App Router), PocketBase, Tailwind CSS, and Framer Motion.
+It focuses on fast UI updates, smooth animations, and a clean developer-friendly structure — all written in JavaScript.
 
-First, run the development server:
+🚀 Tech Stack
 
-```bash
-npm run dev
+Framework: Next.js (App Router)
+
+Language: JavaScript
+
+Database & Realtime: PocketBase
+
+Styling: Tailwind CSS
+
+Animations: Framer Motion
+
+Icons: react-icons
+
+Notifications: sonner
+
+Hosting: Vercel
+
+✨ Features
+
+✅ Create, edit, and delete tasks
+
+🔄 Realtime updates via PocketBase subscriptions
+
+🏷️ Multi-tag support (Work, Urgent, Personal, Ideas)
+
+🎯 Optimistic UI with instant feedback
+
+🎬 Smooth enter/exit & reorder animations
+
+📱 Responsive dashboard layout
+
+🧼 Clean, maintainable component structure
+
+📂 Project Structure (Simplified)
+src/
+├─ app/
+│ ├─ layout.js # Global layout (Sidebar + Navbar)
+│ ├─ page.js # Dashboard entry
+│ └─ loading.js # Skeleton loading state
+├─ components/
+│ ├─ TaskCard.js
+│ ├─ TaskList.js
+│ ├─ CreateTaskModal.js
+│ └─ EmptyState.js
+├─ lib/
+│ ├─ pocketbase.js
+│ └─ TasksRealtimeProvider.js
+├─ services/
+│ └─ apiTasks.js
+└─ utils/
+└─ helpers.js
+
+🧠 How Realtime Works
+
+Tasks are fetched server-side on first load.
+
+Initial data is passed into a client-side realtime provider.
+
+PocketBase subscriptions keep the UI in sync automatically.
+
+UI updates instantly without page reloads or manual refetching.
+
+🛠️ Getting Started
+
+1. Clone the repository
+   git clone https://github.com/your-username/casalavoro.git
+   cd casalavoro
+
+2. Install dependencies
+   npm install
+
 # or
-yarn dev
+
+yarn
+
 # or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+pnpm install
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a .env.local file:
 
-## Learn More
+NEXT_PUBLIC_PB_URL=http://127.0.0.1:8090
 
-To learn more about Next.js, take a look at the following resources:
+Make sure PocketBase is running locally or hosted.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Run the development server
+   npm run dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open
+👉 http://localhost:3000
 
-## Deploy on Vercel
+🗄️ PocketBase Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create a Tasks collection with the following fields:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Field Type
+tittle text
+description text
+completed boolean
+tags select (multi)
+created auto
+
+Enable Realtime API for the collection.
+
+🎨 Styling & Fonts
+
+Tailwind CSS for layout and UI
+
+next/font for optimized font loading
+
+Icons handled via react-icons for consistency
+
+🚢 Deployment
+
+This project is optimized for Vercel.
+
+npm run build
+
+Then deploy via the Vercel dashboard or CLI.
+
+Docs:
+👉 https://nextjs.org/docs/app/building-your-application/deploying
+
+📌 Notes
+
+No custom API routes required
+
+PocketBase SDK is used directly
+
+Server Components for data fetching
+
+Client Components for realtime interaction and UI
