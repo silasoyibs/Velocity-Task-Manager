@@ -1,9 +1,8 @@
-import TaskCard from "../components/TaskCard";
+import TaskListRealtime from "../components/TaskListRealTime";
+import { getTasks } from "../services/apiTasks";
 
-export default function DashboardPage() {
-  return (
-    <div>
-      <TaskCard />
-    </div>
-  );
+export default async function DashboardPage() {
+  const tasks = await getTasks();
+  console.log(tasks);
+  return <TaskListRealtime initialItems={tasks} />;
 }

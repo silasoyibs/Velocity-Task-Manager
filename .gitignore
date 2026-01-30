@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pocketbasepocketbase.exe serve
+pocketbase_0.36.1_windows_amd64/
+pb_data/
