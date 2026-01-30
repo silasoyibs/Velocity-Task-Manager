@@ -1,7 +1,7 @@
-import TaskList from "../components/TaskList";
+import TaskList from "../src/app/components/TaskList";
 // import TaskListRealtime from "../components/TaskListRealTime";
-import { TasksRealtimeProvider } from "../lib/TasksRealtimeProvider";
-import { getTasks } from "../services/apiTasks";
+import { TasksRealtimeProvider } from "../src/app/lib/TasksRealtimeProvider";
+import { getTasks } from "../src/app/services/apiTasks";
 
 export default async function DashboardPage() {
   const tasks = await getTasks();

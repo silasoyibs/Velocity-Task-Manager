@@ -1,10 +1,12 @@
-export default async function Home() {
+import TaskList from "./components/TaskList";
+import { TasksRealtimeProvider } from "./lib/TasksRealtimeProvider";
+import { getTasks } from "./services/apiTasks";
+
+export default async function DashboardPage() {
+  const tasks = await getTasks();
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">Velocity Task Manager</h1>
-      <p className="mt-2 text-gray-600 ">
-        Starter page replaced successfully ✅
-      </p>
-    </main>
+    <TasksRealtimeProvider initialItems={tasks}>
+      <TaskList />
+    </TasksRealtimeProvider>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createTask } from "../services/apiTasks";
 
 const categories = [
   { key: "work", label: "Work", icon: BriefcaseIcon },
@@ -8,7 +9,19 @@ const categories = [
   { key: "ideas", label: "Ideas", icon: BulbIcon },
 ];
 
-export default function CreateTaskModal({ open, onClose }) {
+export default function CreateTaskModal({ open, onClose, onCreateTask }) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("work");
+
+  // Reset form when opened
+  useEffect(() => {
+    if (!open) return;
+    setTitle("");
+    setDescription("");
+    setCategory("work");
+  }, [open]);
+
   // Close on Escape
   useEffect(() => {
     if (!open) return;
@@ -20,6 +33,25 @@ export default function CreateTaskModal({ open, onClose }) {
   }, [open, onClose]);
 
   if (!open) return null;
+
+  async function handleCreateTask(e) {
+    e.preventDefault();
+
+    const payload = {
+      tittle: title.trim(), // ✅ PB expects "tittle"
+      description: description.trim(),
+      tags: [category], // ✅ PB expects "tags" (array)
+    };
+
+    if (!payload.tittle) return;
+
+    try {
+      await createTask(payload);
+      onClose?.();
+    } catch (err) {
+      console.error("Create task failed:", err);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50">
@@ -51,12 +83,14 @@ export default function CreateTaskModal({ open, onClose }) {
           </div>
 
           {/* Body */}
-          <form className="px-6 py-6">
+          <form className="px-6 py-6" onSubmit={handleCreateTask}>
             {/* Title */}
             <label className="block text-sm font-medium text-zinc-900">
               Task Title
             </label>
             <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title..."
               className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
             />
@@ -66,6 +100,8 @@ export default function CreateTaskModal({ open, onClose }) {
               Description <span className="text-zinc-400">(Optional)</span>
             </label>
             <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Add more details..."
               rows={4}
               className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
@@ -76,21 +112,22 @@ export default function CreateTaskModal({ open, onClose }) {
               <div className="text-sm font-medium text-zinc-900">Category</div>
 
               <div className="mt-3 flex flex-wrap gap-3">
-                {categories.map((c, idx) => {
+                {categories.map((c) => {
                   const Icon = c.icon;
-                  // UI-only: first looks selected like your screenshot
-                  const selected = idx === 0;
+                  const selected = category === c.key;
 
                   return (
                     <button
                       key={c.key}
                       type="button"
+                      onClick={() => setCategory(c.key)}
                       className={[
                         "inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition",
                         selected
                           ? "border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-200"
                           : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50",
                       ].join(" ")}
+                      aria-pressed={selected}
                     >
                       <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white ring-1 ring-black/5">
                         <Icon />
@@ -101,25 +138,26 @@ export default function CreateTaskModal({ open, onClose }) {
                 })}
               </div>
             </div>
+
+            {/* Footer */}
+            <div className="mt-8 flex items-center justify-end gap-3 border-t border-black/10 pt-5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+                disabled={!title.trim()}
+              >
+                Create Task
+              </button>
+            </div>
           </form>
-
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 border-t border-black/10 px-6 py-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
-            >
-              Create Task
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -146,7 +184,7 @@ function BriefcaseIcon() {
 function AlertIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <path d="M12 2.25a.75.75 0 01.67.41l9 18a.75.75 0 01-.67 1.09H3a.75.75 0 01-.67-1.09l9-18A.75.75 0 0112 2.25zm0 6a.75.75 0 00-.75.75v5.25a.75.75 0 001.5 0V9A.75.75 0 00 12 8.25zm0 10.5a1 1 0 100-2 1 1 0 000 2z" />
+      <path d="M12 2.25a.75.75 0 01.67.41l9 18a.75.75 0 01-.67 1.09H3a.75.75 0 01-.67-1.09l9-18A.75.75 0 0112 2.25zm0 6a.75.75 0 00-.75.75v5.25a.75.75 0 001.5 0V9A.75.75 0 0012 8.25zm0 10.5a1 1 0 100-2 1 1 0 000 2z" />
     </svg>
   );
 }

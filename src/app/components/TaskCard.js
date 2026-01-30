@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { getTagStyles, renderTagIcon, timeAgoFromISO } from "../utils/helper";
+import { FaEdit } from "react-icons/fa";
 
-export default function TaskCard({ task }) {
+export default function TaskCard({ task, onDelete }) {
   const [checked, setChecked] = useState(!!task.completed);
 
   // ✅ tags from DB
@@ -102,19 +103,17 @@ export default function TaskCard({ task }) {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700"
+            className="rounded-lg p-2"
             aria-label="Edit task"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-              <path d="M16.862 3.487a2.25 2.25 0 013.182 3.182l-9.83 9.83a4.5 4.5 0 01-1.897 1.136l-3.09 1.03a.75.75 0 01-.948-.948l1.03-3.09a4.5 4.5 0 011.136-1.897l9.83-9.83z" />
-              <path d="M19.5 10.5v9A2.25 2.25 0 0117.25 21.75h-12A2.25 2.25 0 013 19.5v-12A2.25 2.25 0 015.25 5.25h9" />
-            </svg>
+            <FaEdit className="h-5 w-5 text-black-600" />
           </button>
 
           <button
             type="button"
             className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700"
             aria-label="Delete task"
+            onClick={() => onDelete?.(task.id)}
           >
             <MdDelete className="h-5 w-5 text-red-500" />
           </button>

@@ -1,8 +1,8 @@
 "use client";
 
+import Sidebar from "../src/app/components/Sidebar";
+import Navbar from "../src/app/components/Navbar";
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 
 export default function DashboardLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
