@@ -1,6 +1,6 @@
-CasaLavoro – Realtime Task Manager
+Velocity-Task-Manager
 
-CasaLavoro is a real-time task management dashboard built with Next.js (App Router), PocketBase, Tailwind CSS, and Framer Motion.
+Velocity-Task-Manager is a real-time task management dashboard built with Next.js (App Router), PocketBase, Tailwind CSS, and Framer Motion.
 It focuses on fast UI updates, smooth animations, and a clean developer-friendly structure — all written in JavaScript.
 
 🚀 Tech Stack
@@ -36,25 +36,6 @@ Hosting: Vercel
 📱 Responsive dashboard layout
 
 🧼 Clean, maintainable component structure
-
-📂 Project Structure (Simplified)
-src/
-├─ app/
-│  ├─ layout.js        # Global layout (Sidebar + Navbar)
-│  ├─ page.js          # Dashboard entry
-│  └─ loading.js       # Skeleton loading state
-├─ components/
-│  ├─ TaskCard.js
-│  ├─ TaskList.js
-│  ├─ CreateTaskModal.js
-│  └─ EmptyState.js
-├─ lib/
-│  ├─ pocketbase.js
-│  └─ TasksRealtimeProvider.js
-├─ services/
-│  └─ apiTasks.js
-└─ utils/
-   └─ helpers.js
 
 🧠 How Realtime Works
 
