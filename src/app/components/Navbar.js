@@ -1,33 +1,13 @@
 "use client";
-
 import { useState } from "react";
-import Link from "next/link";
 import CreateTaskModal from "./CreateTaskModal";
-
-const NavLink = ({ href, label, active }) => {
-  return (
-    <Link
-      href={href}
-      className={[
-        "rounded-xl px-3 py-2 text-sm font-medium transition",
-        active
-          ? "bg-zinc-900 text-amber-400"
-          : "text-zinc-900 ring-1 ring-black/5 hover:bg-zinc-50",
-      ].join(" ")}
-    >
-      {label}
-    </Link>
-  );
-};
 
 export default function Navbar({ collapsed, onToggleSidebar }) {
   const [open, setOpen] = useState(false);
-
   return (
     <>
       <header className=" ring-1 ring-black/5 text-zinc-900  border-[rgba(0,0,0,0.1)] bg-white px-3">
-        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center justify-between sm:p-5">
-          {/* Left: Toggle + title + nav links */}
+        <div className="flex flex-col gap-3 p-4 sm:flex-row justify-between sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex items-center gap-3">
               {/* Sidebar collapse toggle (desktop) */}
@@ -55,9 +35,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
             </div>
           </div>
 
-          {/* Right: Search + actions */}
           <div className="flex items-center gap-2">
-            {/* ✅ Open Modal */}
             <button
               type="button"
               onClick={() => setOpen(true)}

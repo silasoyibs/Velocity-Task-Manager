@@ -1,5 +1,5 @@
 // Skeleton placeholder shown while tasks are loading
-import TaskCardSkeleton from "./components/TaskCardSkeleton";
+import TaskCardSkeleton from "../components/TaskCardSkeleton";
 
 export default function Loading() {
   return (

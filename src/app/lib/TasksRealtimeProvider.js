@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import PocketBase from "pocketbase";
@@ -21,55 +22,73 @@ export function TasksRealtimeProvider({ initialItems = [], children }) {
     return [...items].sort((a, b) => new Date(b.created) - new Date(a.created));
   }, [items]);
 
+  // Keep a stable PB client across renders
+  const pbRef = useRef(null);
+
   useEffect(() => {
-    // Create a PocketBase client for realtime subscriptions
     const pb = new PocketBase(process.env.NEXT_PUBLIC_PB_URL);
+    pbRef.current = pb;
 
-    // Subscribe to all changes in the Tasks collection
-    const unsub = pb.collection("Tasks").subscribe("*", (e) => {
-      const record = e?.record;
-      if (!record) return;
+    let cancelled = false;
+    let unsubFn = null;
 
-      setItems((prev) => {
-        // Check if this record already exists in state
-        const idx = prev.findIndex((t) => t.id === record.id);
+    (async () => {
+      try {
+        // subscribe may return a Promise (common)
+        unsubFn = await pb.collection("Tasks").subscribe("*", (e) => {
+          if (cancelled) return;
 
-        // Add new task to the front
-        if (e.action === "create") {
-          if (idx !== -1) return prev;
-          return [record, ...prev];
-        }
+          const record = e?.record;
+          if (!record) return;
 
-        // Replace existing task or insert if missing
-        if (e.action === "update") {
-          if (idx === -1) return [record, ...prev];
-          const copy = [...prev];
-          copy[idx] = record;
-          return copy;
-        }
+          setItems((prev) => {
+            const idx = prev.findIndex((t) => t.id === record.id);
 
-        // Remove deleted task from the list
-        if (e.action === "delete") {
-          return prev.filter((t) => t.id !== record.id);
-        }
+            if (e.action === "create") {
+              if (idx !== -1) return prev;
+              return [record, ...prev];
+            }
 
-        return prev;
-      });
-    });
+            if (e.action === "update") {
+              if (idx === -1) return [record, ...prev];
+              const copy = [...prev];
+              copy[idx] = record;
+              return copy;
+            }
+
+            if (e.action === "delete") {
+              return prev.filter((t) => t.id !== record.id);
+            }
+
+            return prev;
+          });
+        });
+      } catch (err) {
+        console.error("PocketBase subscribe failed:", err);
+      }
+    })();
 
     return () => {
-      // Unsubscribe realtime listeners on unmount
-      pb.collection("Tasks").unsubscribe("*");
+      cancelled = true;
 
-      // Clear auth state for this client instance
-      pb.authStore.clear();
+      // Safely unsubscribe
+      if (typeof unsubFn === "function") {
+        try {
+          unsubFn();
+        } catch (e) {
+          console.warn("unsubFn threw:", e);
+        }
+      } else {
+        // fallback (works even if subscribe never resolved)
+        try {
+          pb.collection("Tasks").unsubscribe("*");
+        } catch {}
+      }
 
-      // Also run the unsubscribe function returned by subscribe
-      unsub?.();
+      pbRef.current = null;
     };
   }, []);
 
-  // Expose raw items, sorted items, and a setter for local updates/optimistic UI
   return (
     <TasksRealtimeContext.Provider value={{ items, sortedItems, setItems }}>
       {children}
@@ -78,14 +97,11 @@ export function TasksRealtimeProvider({ initialItems = [], children }) {
 }
 
 export function useTasksRealtime() {
-  // Read tasks state from context
   const ctx = useContext(TasksRealtimeContext);
-
-  // Guard against using the hook outside the provider
-  if (!ctx)
+  if (!ctx) {
     throw new Error(
       "useTasksRealtime must be used inside TasksRealtimeProvider",
     );
-
+  }
   return ctx;
 }

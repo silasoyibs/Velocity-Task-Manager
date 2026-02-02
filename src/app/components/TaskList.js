@@ -1,46 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTasksRealtime } from "../lib/TasksRealtimeProvider";
-import { deleteTask, updateTask } from "../services/apiTasks";
-import CreateTaskModal from "./CreateTaskModal";
-import TaskCard from "./TaskCard";
+import { useMemo, useState } from "react";
 import { AnimatePresence, Reorder } from "framer-motion";
+import TaskCard from "./TaskCard";
+import CreateTaskModal from "./CreateTaskModal";
+import { deleteTask, updateTask } from "../services/apiTasks";
 
-export default function TaskList() {
-  // Get realtime tasks (already sorted by newest)
-  const { sortedItems: Tasks } = useTasksRealtime();
-
-  // Holds the task currently being edited (also controls the edit modal)
+export default function TaskList({ tasks = [] }) {
   const [editingTask, setEditingTask] = useState(null);
 
-  // Separate local ordering so drag-reorder doesn’t fight realtime sorting
-  const [ordered, setOrdered] = useState([]);
+  // Stores only the user's drag order (ids), not the full task objects.
+  const [orderIds, setOrderIds] = useState(() => tasks.map((t) => t.id));
 
-  useEffect(() => {
-    // Keep the current drag order if possible when Tasks updates from realtime
-    setOrdered((prev) => {
-      if (!prev.length) return Tasks;
+  const taskById = useMemo(() => new Map(tasks.map((t) => [t.id, t])), [tasks]);
 
-      // Build a quick lookup of the previous order positions
-      const prevIndex = new Map(prev.map((t, i) => [t.id, i]));
+  // Merge incoming tasks with the user's last known drag order:
+  // - keep existing ids in their dragged order
+  // - drop deleted ids
+  // - put brand new ids at the top (so new tasks appear first)
+  const mergedIds = useMemo(() => {
+    const incomingIds = tasks.map((t) => t.id);
+    const incomingSet = new Set(incomingIds);
 
-      // Sort incoming Tasks to match the last known local order
-      return [...Tasks].sort(
-        (a, b) => (prevIndex.get(a.id) ?? 9999) - (prevIndex.get(b.id) ?? 9999),
-      );
-    });
-  }, [Tasks]);
+    const kept = orderIds.filter((id) => incomingSet.has(id));
+    const extras = incomingIds.filter((id) => !kept.includes(id));
+
+    return [...extras, ...kept];
+  }, [tasks, orderIds]);
+
+  const orderedTasks = useMemo(() => {
+    return mergedIds.map((id) => taskById.get(id)).filter(Boolean);
+  }, [mergedIds, taskById]);
 
   async function handleDelete(id) {
-    // Quick confirm to avoid accidental deletes
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this task?",
-    );
-    if (!confirmed) return;
-
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
-      // Delete in PocketBase (realtime will update the list)
       await deleteTask(id);
     } catch (err) {
       console.error(err);
@@ -48,11 +42,10 @@ export default function TaskList() {
   }
 
   async function handleUpdate(payload) {
-    try {
-      // Persist edits (realtime will update the list)
-      await updateTask(editingTask.id, payload);
+    if (!editingTask?.id) return;
 
-      // Close the modal after successful update
+    try {
+      await updateTask(editingTask.id, payload);
       setEditingTask(null);
     } catch (err) {
       console.error(err);
@@ -61,16 +54,14 @@ export default function TaskList() {
 
   return (
     <>
-      {/* Draggable reorder list */}
       <Reorder.Group
         axis="y"
-        values={ordered}
-        onReorder={setOrdered}
+        values={orderedTasks}
+        onReorder={(next) => setOrderIds(next.map((t) => t.id))}
         className="space-y-6"
       >
-        {/* Animate items entering/leaving the list */}
         <AnimatePresence initial={false}>
-          {ordered.map((task) => (
+          {orderedTasks.map((task) => (
             <Reorder.Item
               key={task.id}
               value={task}
@@ -82,10 +73,9 @@ export default function TaskList() {
               whileDrag={{ scale: 1.01 }}
               className="cursor-grab active:cursor-grabbing"
             >
-              {/* Task card UI */}
               <TaskCard
                 task={task}
-                onEdit={(t) => setEditingTask(t)}
+                onEdit={setEditingTask}
                 onDelete={handleDelete}
               />
             </Reorder.Item>
@@ -93,7 +83,6 @@ export default function TaskList() {
         </AnimatePresence>
       </Reorder.Group>
 
-      {/* Edit modal (reuses the create modal in edit mode) */}
       <CreateTaskModal
         open={!!editingTask}
         onClose={() => setEditingTask(null)}
