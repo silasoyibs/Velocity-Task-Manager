@@ -1,35 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTasksRealtime } from "../lib/TasksRealtimeProvider";
-import { deleteTask, updateTask } from "../services/apiTasks";
-import CreateTaskModal from "./CreateTaskModal";
-import TaskCard from "./TaskCard";
+import { useMemo, useState } from "react";
 import { AnimatePresence, Reorder } from "framer-motion";
+import TaskCard from "./TaskCard";
+import CreateTaskModal from "./CreateTaskModal";
+import { deleteTask, updateTask } from "../services/apiTasks";
 
-export default function TaskList() {
-  const { sortedItems: Tasks } = useTasksRealtime();
+export default function TaskList({ tasks = [] }) {
   const [editingTask, setEditingTask] = useState(null);
 
-  // local order for dragging
-  const [ordered, setOrdered] = useState([]);
+  // Stores only the user's drag order (ids), not the full task objects.
+  const [orderIds, setOrderIds] = useState(() => tasks.map((t) => t.id));
 
-  useEffect(() => {
-    setOrdered((prev) => {
-      if (!prev.length) return Tasks;
+  const taskById = useMemo(() => new Map(tasks.map((t) => [t.id, t])), [tasks]);
 
-      const prevIndex = new Map(prev.map((t, i) => [t.id, i]));
-      return [...Tasks].sort(
-        (a, b) => (prevIndex.get(a.id) ?? 9999) - (prevIndex.get(b.id) ?? 9999),
-      );
-    });
-  }, [Tasks]);
+  // Merge incoming tasks with the user's last known drag order:
+  // - keep existing ids in their dragged order
+  // - drop deleted ids
+  // - put brand new ids at the top (so new tasks appear first)
+  const mergedIds = useMemo(() => {
+    const incomingIds = tasks.map((t) => t.id);
+    const incomingSet = new Set(incomingIds);
+
+    const kept = orderIds.filter((id) => incomingSet.has(id));
+    const extras = incomingIds.filter((id) => !kept.includes(id));
+
+    return [...extras, ...kept];
+  }, [tasks, orderIds]);
+
+  const orderedTasks = useMemo(() => {
+    return mergedIds.map((id) => taskById.get(id)).filter(Boolean);
+  }, [mergedIds, taskById]);
 
   async function handleDelete(id) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this task?",
-    );
-    if (!confirmed) return;
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
       await deleteTask(id);
     } catch (err) {
@@ -38,6 +42,8 @@ export default function TaskList() {
   }
 
   async function handleUpdate(payload) {
+    if (!editingTask?.id) return;
+
     try {
       await updateTask(editingTask.id, payload);
       setEditingTask(null);
@@ -50,12 +56,12 @@ export default function TaskList() {
     <>
       <Reorder.Group
         axis="y"
-        values={ordered}
-        onReorder={setOrdered}
+        values={orderedTasks}
+        onReorder={(next) => setOrderIds(next.map((t) => t.id))}
         className="space-y-6"
       >
         <AnimatePresence initial={false}>
-          {ordered.map((task) => (
+          {orderedTasks.map((task) => (
             <Reorder.Item
               key={task.id}
               value={task}
@@ -69,7 +75,7 @@ export default function TaskList() {
             >
               <TaskCard
                 task={task}
-                onEdit={(t) => setEditingTask(t)}
+                onEdit={setEditingTask}
                 onDelete={handleDelete}
               />
             </Reorder.Item>

@@ -1,13 +1,27 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createTask, updateTask } from "../services/apiTasks";
+import { BsBriefcaseFill } from "react-icons/bs";
+import { IoAlertCircle, IoCloseSharp } from "react-icons/io5";
+import { FaUser, FaLightbulb } from "react-icons/fa";
 import { toast } from "sonner";
 
+// Available tag categories shown in the modal
 const categories = [
-  { key: "work", label: "Work", icon: BriefcaseIcon },
-  { key: "urgent", label: "Urgent", icon: AlertIcon },
-  { key: "personal", label: "Personal", icon: UserIcon },
-  { key: "ideas", label: "Ideas", icon: BulbIcon },
+  { key: "work", label: "Work", icon: BsBriefcaseFill, color: "text-blue-500" },
+  {
+    key: "urgent",
+    label: "Urgent",
+    icon: IoAlertCircle,
+    color: "text-red-500",
+  },
+  {
+    key: "personal",
+    label: "Personal",
+    icon: FaUser,
+    color: "text-purple-500",
+  },
+  { key: "ideas", label: "Ideas", icon: FaLightbulb, color: "text-amber-500" },
 ];
 
 export default function CreateTaskModal({
@@ -16,11 +30,15 @@ export default function CreateTaskModal({
   mode = "create",
   task = null,
 }) {
+  // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // ✅ multi-select tags
+  // Selected tags (multi-select, but never empty)
   const [selectedTags, setSelectedTags] = useState(["work"]);
+
+  // Tracks submission state to prevent double submits + show "Creating/Updating"
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -37,32 +55,34 @@ export default function CreateTaskModal({
       setDescription("");
       setSelectedTags(["work"]);
     }
+
+    setSubmitting(false);
   }, [open, mode, task]);
 
   useEffect(() => {
     if (!open) return;
+
     const onKeyDown = (e) => {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape" && !submitting) onClose?.();
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, submitting]);
 
   if (!open) return null;
 
   function toggleTag(tagKey) {
     setSelectedTags((prev) => {
       const has = prev.includes(tagKey);
-
-      // if removing would make it empty, keep at least one
       if (has && prev.length === 1) return prev;
-
       return has ? prev.filter((t) => t !== tagKey) : [...prev, tagKey];
     });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submitting) return;
 
     const payload = {
       tittle: title.trim(),
@@ -73,6 +93,8 @@ export default function CreateTaskModal({
     if (!payload.tittle) return;
 
     try {
+      setSubmitting(true);
+
       if (mode === "edit" && task?.id) {
         await updateTask(task.id, payload);
         toast.success("Task update successful");
@@ -80,50 +102,57 @@ export default function CreateTaskModal({
         await createTask(payload);
         toast.success("Task created successful");
       }
+
       onClose?.();
     } catch (err) {
       console.error(
         `${mode === "edit" ? "Update" : "Create"} task failed:`,
         err,
       );
-      toast.error(
-        `${mode === "edit" ? "Update" : "Create"} task failed:` || err.message,
-      );
+      toast.error(`${mode === "edit" ? "Update" : "Create"} task failed`);
+    } finally {
+      setSubmitting(false);
     }
   }
 
   return (
     <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
+      {/* Clickable backdrop to close the modal */}
       <button
         type="button"
         aria-label="Close modal"
-        onClick={onClose}
+        onClick={() => {
+          if (!submitting) onClose?.();
+        }}
         className="absolute inset-0 bg-black/40"
       />
 
-      {/* Modal wrapper (reduced height + scroll) */}
+      {/* Centered modal container */}
       <div className="relative mx-auto flex min-h-screen max-w-2xl items-center justify-center p-4">
         <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
-          {/* Header */}
+          {/* Modal header */}
           <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">
             <h2 className="text-xl font-semibold text-zinc-900">
               {mode === "edit" ? "Edit Task" : "Create New Task"}
             </h2>
 
+            {/* Close button */}
             <button
               type="button"
-              onClick={onClose}
-              className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700"
+              onClick={() => {
+                if (!submitting) onClose?.();
+              }}
+              className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 disabled:opacity-50"
               aria-label="Close"
+              disabled={submitting}
             >
-              <XIcon />
+              <IoCloseSharp />
             </button>
           </div>
 
-          {/* Body (tighter spacing) */}
+          {/* Main form body */}
           <form onSubmit={handleSubmit} className="px-5 py-4">
-            {/* Title */}
+            {/* Title input */}
             <label className="block text-sm font-medium text-zinc-900">
               Task Title
             </label>
@@ -134,7 +163,7 @@ export default function CreateTaskModal({
               className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
             />
 
-            {/* Description */}
+            {/* Description input */}
             <label className="mt-4 block text-sm font-medium text-zinc-900">
               Description <span className="text-zinc-400">(Optional)</span>
             </label>
@@ -146,7 +175,7 @@ export default function CreateTaskModal({
               className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
             />
 
-            {/* Categories (multi-select) */}
+            {/* Tag picker */}
             <div className="mt-5">
               <div className="text-sm font-medium text-zinc-900">
                 Categories
@@ -162,16 +191,15 @@ export default function CreateTaskModal({
                       key={c.key}
                       type="button"
                       onClick={() => toggleTag(c.key)}
-                      className={[
-                        "inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition",
+                      className={`${
                         selected
                           ? "border-amber-400 bg-amber-50 text-black ring-2 ring-amber-200"
-                          : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50",
-                      ].join(" ")}
+                          : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
+                      } inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition`}
                       aria-pressed={selected}
                     >
                       <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white ring-1 ring-black/5">
-                        <Icon />
+                        <Icon className={c.color} />
                       </span>
                       {c.label}
                     </button>
@@ -184,68 +212,36 @@ export default function CreateTaskModal({
               </div>
             </div>
 
-            {/* Footer */}
+            {/* Form footer actions */}
             <div className="mt-6 flex items-center justify-end gap-3 border-t border-black/10 pt-4">
               <button
                 type="button"
-                onClick={onClose}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+                onClick={() => {
+                  if (!submitting) onClose?.();
+                }}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={submitting}
               >
                 Cancel
               </button>
 
               <button
                 type="submit"
-                className="rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black "
-                disabled={!title.trim()}
+                className="rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!title.trim() || submitting}
               >
-                {mode === "edit" ? "Update Task" : "Create Task"}
+                {submitting
+                  ? mode === "edit"
+                    ? "Updating…"
+                    : "Creating…"
+                  : mode === "edit"
+                    ? "Update Task"
+                    : "Create Task"}
               </button>
             </div>
           </form>
         </div>
       </div>
     </div>
-  );
-}
-
-/* ---------- Icons ---------- */
-function XIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-      <path d="M18.3 5.71a1 1 0 010 1.41L13.41 12l4.89 4.88a1 1 0 01-1.42 1.42L12 13.41l-4.88 4.89a1 1 0 01-1.42-1.42L10.59 12 5.7 7.12A1 1 0 017.12 5.7L12 10.59l4.88-4.88a1 1 0 011.42 0z" />
-    </svg>
-  );
-}
-
-function BriefcaseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <path d="M9 3.75A2.25 2.25 0 0111.25 1.5h1.5A2.25 2.25 0 0115 3.75V6h4.5A2.25 2.25 0 0121.75 8.25v10.5A2.25 2.25 0 0119.5 21h-15A2.25 2.25 0 012.25 18.75V8.25A2.25 2.25 0 014.5 6H9V3.75zM10.5 6h3V3.75a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75V6z" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <path d="M12 2.25a.75.75 0 01.67.41l9 18a.75.75 0 01-.67 1.09H3a.75.75 0 01-.67-1.09l9-18A.75.75 0 0112 2.25zm0 6a.75.75 0 00-.75.75v5.25a.75.75 0 001.5 0V9A.75.75 0 0012 8.25zm0 10.5a1 1 0 100-2 1 1 0 000 2z" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <path d="M12 12a4.5 4.5 0 10-4.5-4.5A4.5 4.5 0 0012 12zm0 2.25c-4.97 0-9 2.239-9 5V20a3 3 0 003 3h12a3 3 0 003-3v-.75c0-2.761-4.03-5-9-5z" />
-    </svg>
-  );
-}
-
-function BulbIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <path d="M12 2.25A7.5 7.5 0 006.75 15.3V18A2.25 2.25 0 009 20.25h6A2.25 2.25 0 0017.25 18v-2.7A7.5 7.5 0 0012 2.25zM9.75 21.75A1.5 1.5 0 0011.25 23h1.5a1.5 1.5 0 001.5-1.25h-4.5z" />
-    </svg>
   );
 }

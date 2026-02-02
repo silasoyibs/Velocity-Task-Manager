@@ -48,15 +48,20 @@ PocketBase subscriptions keep the UI in sync automatically.
 UI updates instantly without page reloads or manual refetching.
 
 🛠️ Getting Started
+
 1. Clone the repository
-git clone https://github.com/your-username/casalavoro.git
-cd casalavoro
+   git clone https://github.com/your-username/casalavoro.git
+   cd casalavoro
 
 2. Install dependencies
-npm install
+   npm install
+
 # or
+
 yarn
+
 # or
+
 pnpm install
 
 3. Environment variables
@@ -65,12 +70,10 @@ Create a .env.local file:
 
 NEXT_PUBLIC_PB_URL=http://127.0.0.1:8090
 
-
 Make sure PocketBase is running locally or hosted.
 
 4. Run the development server
-npm run dev
-
+   npm run dev
 
 Open
 👉 http://localhost:3000
@@ -79,12 +82,12 @@ Open
 
 Create a Tasks collection with the following fields:
 
-Field	Type
-tittle	text
-description	text
-completed	boolean
-tags	select (multi)
-created	auto
+Field Type
+tittle text
+description text
+completed boolean
+tags select (multi)
+created auto
 
 Enable Realtime API for the collection.
 
@@ -101,7 +104,6 @@ Icons handled via react-icons for consistency
 This project is optimized for Vercel.
 
 npm run build
-
 
 Then deploy via the Vercel dashboard or CLI.
 
