@@ -37,25 +37,6 @@ Hosting: Vercel
 
 🧼 Clean, maintainable component structure
 
-📂 Project Structure (Simplified)
-src/
-├─ app/
-│ ├─ layout.js # Global layout (Sidebar + Navbar)
-│ ├─ page.js # Dashboard entry
-│ └─ loading.js # Skeleton loading state
-├─ components/
-│ ├─ TaskCard.js
-│ ├─ TaskList.js
-│ ├─ CreateTaskModal.js
-│ └─ EmptyState.js
-├─ lib/
-│ ├─ pocketbase.js
-│ └─ TasksRealtimeProvider.js
-├─ services/
-│ └─ apiTasks.js
-└─ utils/
-└─ helpers.js
-
 🧠 How Realtime Works
 
 Tasks are fetched server-side on first load.
