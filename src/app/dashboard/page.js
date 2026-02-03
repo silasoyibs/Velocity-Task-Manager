@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import TaskCardSkeleton from "../components/TaskCardSkeleton";
 import TaskSection from "../components/TaskSection";
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default function DashboardPage() {
   return (
     <>

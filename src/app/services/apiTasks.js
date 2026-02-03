@@ -4,7 +4,7 @@ import pb from "../lib/pocketbase";
 // Fetch a paginated list of tasks sorted by newest first
 export async function getTasks() {
   try {
-    const result = await pb.collection("Tasks").getList(1, 30, {
+    const result = await pb.collection("Tasks").getList(1, 50, {
       sort: "-created",
     });
 
